@@ -5,6 +5,7 @@ import asyncio
 
 try:
     TOKEN = os.getenv("DC_TOKEN")
+    print(f"get token : {TOKEN}")
     print("Finding the env var of token")
 except:
     with open(os.path.join("config.json")) as json_file:
