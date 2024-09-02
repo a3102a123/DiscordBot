@@ -4,7 +4,8 @@ import os
 import asyncio
 
 try:
-    print(os.getenv("RAILWAY_PROJECT_NAME"))
+    print(os.getenv("DC_TOKEN"))
+    print(os.getenv("TEMP"))
     TOKEN = os.getenv("DC_TOKEN")
     print(f"get token : {TOKEN}")
     print("Finding the env var of token")
