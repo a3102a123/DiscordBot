@@ -1,0 +1,2 @@
+The beta version of the discord bot. The functions are limited now. 
+If you have any good idea please context with MapleTu or write the idea on text channel directly.
