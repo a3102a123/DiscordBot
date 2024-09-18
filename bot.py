@@ -33,9 +33,10 @@ class MyHelp(commands.HelpCommand):
 
 # 
 class BotClient(commands.Bot):
-    def __init__(self, gpt: Gemini, **kwargs) -> None:
+    def __init__(self, ch_id, gpt: Gemini, **kwargs) -> None:
         super().__init__(**kwargs)
         self.gpt = gpt
+        self.CHANNEL_ID = int(ch_id)
     
     async def setup_hook(self) -> None:
         self.info_dict = load_folder("docs")
@@ -59,7 +60,7 @@ class BotClient(commands.Bot):
         discord.guild    
     
     async def on_message(self, message: discord.Message) -> None:
-        if message.channel.id != 1278254656115445801 and message.channel.id != 1284753330287149129:
+        if message.channel.id != self.CHANNEL_ID:
             # return when message appears in other channels
             return
         return await super().on_message(message)

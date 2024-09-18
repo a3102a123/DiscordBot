@@ -13,6 +13,7 @@ def init():
         config = dict()
         config["DC_TOKEN"] = os.getenv("DC_TOKEN")
         config["GOOGLE_TOKEN"] = os.getenv("GOOGLE_TOKEN")
+        config["CHANNEL_ID"] = os.getenv("CHANNEL_ID")
         print("Using the env var to set up token")
     return config
 
@@ -24,6 +25,6 @@ if __name__ == "__main__":
     # init the bot
     intents = discord.Intents.default()
     intents.message_content = True
-    client = BotClient(gpt=gpt,command_prefix = '/',intents=intents)
+    client = BotClient(ch_id=cfg["CHANNEL_ID"], gpt=gpt,command_prefix = '/', intents=intents)
     ### run the bot
     client.run(cfg["DC_TOKEN"])
