@@ -3,6 +3,9 @@ import discord
 from discord.ext import commands
 from gpt import *
 from utils.loader import load_folder
+import requests, shutil
+from PIL import Image
+from io import BytesIO
 
 #
 class MyHelp(commands.HelpCommand):
@@ -73,6 +76,7 @@ class BotClient(commands.Bot):
     #         resp = self.gpt.send(message.content)
     #         await message.channel.send(resp.text)
 
+# ! aborting way currently
 def is_channel():
     async def check_channel(ctx):
         return ctx.channel.id == 1278254656115445801
@@ -107,9 +111,32 @@ class GPTCommand(commands.Cog):
     async def send(self, ctx, *content):
         # checking for empty content
         if not content:
-            await ctx.send("You should give some message before the /send command\nUsage : /send typing some word here.")
+            await ctx.send("You should give some message after the /send command\nUsage : /send typing some word here.")
             return
         msg = " ".join(content)
         print(f'Info: Message from {ctx.message.author}: {msg}')
         resp = self.bot.gpt.send(msg)
         await ctx.send(resp.text)
+        
+    @commands.command(help="Sending the message and a image to Gemini and then get the response.")
+    async def send_img(self, ctx: commands.Context, *content):
+        # checking for empty content
+        if len(ctx.message.attachments) == 0:
+            await ctx.send("You should attach an image. You can also type some message to ask the Gemini how about the attached image.\nUsage : /send_img [msg]")
+            return
+        msg = " ".join(content)
+        att_file = ctx.message.attachments[0]
+        rq_file = requests.get(att_file.url, stream=True)
+        file_name_dict = att_file.filename.split(".")
+        img_name = os.path.join(f"temp.{file_name_dict[-1]}")
+        print(f'Info: Message from {ctx.message.author}: {msg} and file {att_file.filename}')
+        if rq_file.status_code == 200:
+            img = Image.open(BytesIO(rq_file.content))
+            cloud_img = self.bot.gpt.upload_img(img, img_name)
+            resp = self.bot.gpt.send_img(cloud_img, msg)
+            await ctx.send(resp.text)
+        else:
+            await ctx.send(f"Unknow network error. Error code is : {rq_file.status_code}")
+            # with open(img_name, 'wb') as f:
+            #     file.raw.decode_content = True
+            #     shutil.copyfileobj(file.raw, f) 
