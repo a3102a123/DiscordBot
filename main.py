@@ -1,8 +1,8 @@
-from bot import *
+from src.bot import *
 import json
 import os
 import asyncio
-from gpt import *
+from src.gpt import *
 
 def init():
     try:

@@ -1,8 +1,10 @@
 from typing import Any, Coroutine
 import discord
 from discord.ext import commands
-from gpt import *
+from .gpt import *
+from .ui import *
 from utils.loader import load_folder
+from utils.dice import *
 import requests, shutil
 from PIL import Image
 from io import BytesIO
@@ -51,6 +53,7 @@ class BotClient(commands.Bot):
     async def bind(self):
         await self.add_cog(BasicCommand(self))
         await self.add_cog(GPTCommand(self))
+        await self.add_cog(BG3_Command(self))
     
     async def on_ready(self):
         print('Logged in as')
@@ -58,9 +61,6 @@ class BotClient(commands.Bot):
         print(f"Bot ID : {self.user.id}")
         print('------')
         print(self.all_commands)
-        
-    def create_channel(self):
-        discord.guild    
     
     async def on_message(self, message: discord.Message) -> None:
         if message.channel.id != self.CHANNEL_ID:
@@ -95,7 +95,6 @@ class BasicCommand(commands.Cog):
     async def ping(self, ctx):
         rtt = self.bot.latency * 1000
         await ctx.send(f"Ping : {rtt:.2f}ms")
-       
         
     # @commands.command()
     # async def help(self, ctx):
@@ -140,3 +139,40 @@ class GPTCommand(commands.Cog):
             # with open(img_name, 'wb') as f:
             #     file.raw.decode_content = True
             #     shutil.copyfileobj(file.raw, f) 
+
+#
+class BG3_Command(commands.Cog):
+    def __init__(self, bot: BotClient) -> None:
+        super().__init__()
+        self.bot = bot
+        self.msg = None
+        self.sampler = BG3_sampler()
+        self.view = None
+    
+    def is_me(self, msg):
+        return msg.author == self.bot.user
+    
+    async def clear(self):
+        await self.msg.delete()
+        self.msg = None
+    
+    async def roll(self, interaction):
+        key = self.view.state_menu.values[0]
+        val = self.sampler.sample(State[key], [])
+        await interaction.response.send_message(f"The result is : {val}") 
+    
+    async def select_state(self, interaction):
+        print(self.view.state_menu.values)
+        await interaction.response.defer()
+        
+    
+    @commands.command(help="Sampling the dice rolls of BG3")
+    async def dice(self, ctx):
+        if self.msg == None:
+            # Send a message with our View class that contains the button
+            self.view = DiceView()
+            self.view.check_btn.callback = self.roll
+            self.view.state_menu.callback = self.select_state
+            self.msg = await ctx.send("柏德之門3 骰子模擬器", view=self.view) 
+            
+            # deleted = await ctx.channel.purge(limit=1, check=self.is_me)
