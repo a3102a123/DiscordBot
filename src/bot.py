@@ -145,24 +145,26 @@ class BG3_Command(commands.Cog):
     def __init__(self, bot: BotClient) -> None:
         super().__init__()
         self.bot = bot
-        self.msg = None
+        self.msg : discord.Message = None 
+        self.view : discord.ui.View = None
+        
         self.sampler = BG3_sampler()
-        self.view = None
     
     def is_me(self, msg):
         return msg.author == self.bot.user
     
     async def clear(self):
+        await self.msg.channel.send("已超時! 自動關閉骰子模擬器!")
         await self.msg.delete()
         self.msg = None
     
     async def roll(self, interaction):
         key = self.view.state_menu.values[0]
-        val = self.sampler.sample(State[key], [])
-        await interaction.response.send_message(f"The result is : {val}") 
+        modifier = int(self.view.modifier_menu.values[0])
+        val, rst = self.sampler.sample(State[key], [], modifier)
+        await interaction.response.send_message(rst) 
     
-    async def select_state(self, interaction):
-        print(self.view.state_menu.values)
+    async def menu_select(self, interaction):
         await interaction.response.defer()
         
     
@@ -171,8 +173,10 @@ class BG3_Command(commands.Cog):
         if self.msg == None:
             # Send a message with our View class that contains the button
             self.view = DiceView()
+            self.view.on_timeout = self.clear
             self.view.check_btn.callback = self.roll
-            self.view.state_menu.callback = self.select_state
+            self.view.state_menu.callback = self.menu_select
+            self.view.modifier_menu.callback = self.menu_select
             self.msg = await ctx.send("柏德之門3 骰子模擬器", view=self.view) 
             
             # deleted = await ctx.channel.purge(limit=1, check=self.is_me)

@@ -43,8 +43,13 @@ class BG3_sampler():
                 d = Dice(d_type.value)
                 bouns += d.roll()
         val = self.behavior[state](val1, val2) + bouns + modifier
-        print(f"Result is : {val} from {val1} , {val2} , bouns : {bouns}")
-        return val
+        dice_rst = f"骰子點數為 : {val1} ; " if state == State.Regular else f"骰子點數為 : {val1} , {val2} ; "
+        
+        rst = f"擲骰結果為 : {val}.\n" + \
+              dice_rst + \
+              f"調整值 : {modifier} ; bouns : {bouns}"
+        # print(rst)
+        return val , rst
     
 if __name__ == "__main__":
     sampler = BG3_sampler()

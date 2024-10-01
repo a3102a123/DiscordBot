@@ -24,6 +24,16 @@ class DiceView(discord.ui.View):
         # There are some bugs of discord.py. It doesn't add the default value to the values list.
         self.state_menu.values.append(State.Regular.name)
         
+        opt = [discord.SelectOption(label=f"{i}", value=f"{i}") for i in range(0,6)]
+        self.modifier_menu = discord.ui.Select(
+            placeholder = "調整值",
+            min_values = 1,
+            max_values = 1,
+            options=opt
+        )
+        self.modifier_menu.options[0].default = True
+        self.modifier_menu.values.append("0")
+        
         self.check_btn = discord.ui.Button(
             label="Roll!", 
             style=discord.ButtonStyle.primary, 
@@ -34,6 +44,7 @@ class DiceView(discord.ui.View):
     
     def layout(self):
         self.add_item(self.state_menu)
+        self.add_item(self.modifier_menu)
         self.add_item(self.check_btn)
     
     # Create a button with the label "😎 Click me!" with color Blurple
